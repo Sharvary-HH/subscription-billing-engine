@@ -28,6 +28,20 @@ start and on **Reset demo**.
 ![Coverage](https://img.shields.io/badge/coverage-94.9%25%20line%20%2F%2086.2%25%20branch-141414?labelColor=E2E800)
 ![CI](https://github.com/Sharvary-HH/subscription-billing-engine/actions/workflows/ci.yml/badge.svg)
 
+## Screenshots
+
+| Admin dashboard, with the time-travel panel | Dunning queue, attempt history per case |
+|---|---|
+| ![Admin dashboard](docs/screenshots/admin-dashboard.png) | ![Dunning queue](docs/screenshots/admin-dunning.png) |
+
+| Customer overview: current period, next invoice estimate, history | Invoice with proration lines marked and running totals |
+|---|---|
+| ![Customer overview](docs/screenshots/customer-overview.png) | ![Invoice](docs/screenshots/customer-invoice.png) |
+
+| Plans: versioned prices, tiered and volume bands |
+|---|
+| ![Plans](docs/screenshots/admin-plans.png) |
+
 ## Why this exists
 
 Billing looks like CRUD and is not. Every one of these is a place a naive implementation is
