@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-frontend
+  namespace: billing
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: billing-frontend }
+  template:
+    metadata:
+      labels: { app: billing-frontend }
+    spec:
+      containers:
+        - name: frontend
+          image: billing-frontend:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - { name: BACKEND_URL, value: http://billing-backend:8080 }
+          ports: [{ containerPort: 80 }]
+          resources:
+            requests: { cpu: 50m, memory: 32Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-frontend
+  namespace: billing
+spec:
+  type: NodePort
+  selector: { app: billing-frontend }
+  ports: [{ port: 80, nodePort: 30081 }]

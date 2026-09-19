@@ -1,0 +1,62 @@
+# A single-node Postgres for local clusters (kind / minikube). In a real deployment this would be
+# a managed database and this file would not exist.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: billing-db
+  namespace: billing
+type: Opaque
+stringData:
+  POSTGRES_DB: billing
+  POSTGRES_USER: billing
+  POSTGRES_PASSWORD: billing
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: billing-db-data
+  namespace: billing
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: billing
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: { app: postgres }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          envFrom:
+            - secretRef: { name: billing-db }
+          ports: [{ containerPort: 5432 }]
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "billing"] }
+            periodSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: billing-db-data }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: billing
+spec:
+  selector: { app: postgres }
+  ports: [{ port: 5432 }]

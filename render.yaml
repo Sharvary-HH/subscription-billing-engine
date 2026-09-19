@@ -1,0 +1,34 @@
+# Render blueprint: backend container plus a managed Postgres. The Angular build goes to Vercel
+# (see frontend/vercel.json) and points at this service's public URL.
+services:
+  - type: web
+    name: billing-backend
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: DB_HOST
+        fromDatabase: { name: billing-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: billing-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: billing-db, property: database }
+      - key: DATABASE_USER
+        fromDatabase: { name: billing-db, property: user }
+      - key: DATABASE_PASSWORD
+        fromDatabase: { name: billing-db, property: password }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://subscription-billing-engine.vercel.app
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx384m -XX:+UseSerialGC
+
+databases:
+  - name: billing-db
+    plan: free
+    databaseName: billing
+    user: billing

@@ -1,0 +1,41 @@
+# An out-of-process billing run, for clusters that would rather not rely on the in-pod scheduler.
+# It calls the same admin endpoint the console uses. Running it while the in-pod scheduler is
+# also on is safe for the same reason two replicas are safe.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: billing-run
+  namespace: billing
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Allow
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: run
+              image: curlimages/curl:8.8.0
+              envFrom:
+                - secretRef: { name: billing-cron }
+              command:
+                - sh
+                - -c
+                - |
+                  set -e
+                  TOKEN=$(curl -sf -X POST http://billing-backend:8080/api/auth/login \
+                    -H 'Content-Type: application/json' \
+                    -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | sed 's/.*"token":"\([^"]*\)".*/\1/')
+                  curl -sf -X POST http://billing-backend:8080/api/admin/jobs/billing/run -H "Authorization: Bearer $TOKEN"
+                  curl -sf -X POST http://billing-backend:8080/api/admin/jobs/dunning/run -H "Authorization: Bearer $TOKEN"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: billing-cron
+  namespace: billing
+type: Opaque
+stringData:
+  ADMIN_EMAIL: admin@demo.billing
+  ADMIN_PASSWORD: demo1234

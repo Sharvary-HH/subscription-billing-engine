@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: billing-backend
+  namespace: billing
+data:
+  DATABASE_URL: jdbc:postgresql://postgres:5432/billing
+  SPRING_PROFILES_ACTIVE: demo
+  CORS_ALLOWED_ORIGINS: http://localhost:8081
+  # The in-process scheduler stays on in every replica. That is the point: two replicas both run
+  # the billing job, and SKIP LOCKED plus the unique index keep it to one invoice per period.
+  BILLING_CRON: "0 */5 * * * *"
+  DUNNING_CRON: "0 */5 * * * *"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: billing-backend
+  namespace: billing
+type: Opaque
+stringData:
+  DATABASE_USER: billing
+  DATABASE_PASSWORD: billing
+  JWT_SECRET: change-me-in-a-real-cluster-32-bytes-min
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-backend
+  namespace: billing
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: billing-backend }
+  template:
+    metadata:
+      labels: { app: billing-backend }
+    spec:
+      containers:
+        - name: backend
+          image: billing-backend:local
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 8080 }]
+          envFrom:
+            - configMapRef: { name: billing-backend }
+            - secretRef: { name: billing-backend }
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits: { memory: 768Mi }
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: 8080 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: 8080 }
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-backend
+  namespace: billing
+spec:
+  selector: { app: billing-backend }
+  ports: [{ port: 8080 }]
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: billing-backend
+  namespace: billing
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: billing-backend
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
