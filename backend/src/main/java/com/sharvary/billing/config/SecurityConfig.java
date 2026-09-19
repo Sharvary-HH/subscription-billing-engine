@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/actuator/health", "/actuator/health/**",
+                        .requestMatchers("/", "/api/auth/login", "/actuator/health", "/actuator/health/**",
                                 "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/demo/info").permitAll()
                         .requestMatchers("/api/admin/**", "/api/demo/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
