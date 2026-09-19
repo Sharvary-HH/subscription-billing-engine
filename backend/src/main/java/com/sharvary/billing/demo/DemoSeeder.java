@@ -123,8 +123,10 @@ public class DemoSeeder {
         for (int i = 0; i < people.length; i++) {
             cs[i] = customers.create(people[i][0], people[i][1], usd, people[i][2]);
             auth.createUser(people[i][1], PASSWORD, Role.CUSTOMER, cs[i].getId());
+            // Plain tokens, so the provider's global mode (the "force failures" switch) applies to them.
             String[] brands = {"visa", "mastercard", "amex"};
-            customers.addPaymentMethod(cs[i].getId(), "tok_ok", brands[i % 3], String.format("%04d", 4000 + i * 37), true);
+            String last4 = String.format("%04d", 4000 + i * 37);
+            customers.addPaymentMethod(cs[i].getId(), "tok_card_" + last4, brands[i % 3], last4, true);
         }
 
         Random random = new Random(42);
