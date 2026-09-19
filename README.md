@@ -9,7 +9,9 @@ PostgreSQL, Angular.
 > No real payment rails. The provider is a mock you can tell to decline or time out, because
 > the interesting engineering is in what happens *after* a payment fails.
 
-**Live demo:** _coming once the Render/Vercel deploy is clicked through; see [Deploying](#deploying)._
+**Live demo:** https://subscription-billing-engine-six.vercel.app (API docs: https://billing-backend-mhgp.onrender.com/swagger-ui.html)
+
+The backend sleeps on Render's free tier after fifteen idle minutes; the first request takes about a minute to wake it and reseed the demo.
 
 | Role | Email | Password |
 |---|---|---|
