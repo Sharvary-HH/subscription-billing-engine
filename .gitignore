@@ -1,0 +1,11 @@
+prompt.pdf
+*.pdf
+.DS_Store
+.env
+.idea/
+*.iml
+.vscode/
+backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/

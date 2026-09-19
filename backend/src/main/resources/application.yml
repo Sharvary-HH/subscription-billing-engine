@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: billing
+  datasource:
+    # Either a full JDBC url, or host/port/name pieces (what managed Postgres providers hand out).
+    url: ${DATABASE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:billing}}
+    username: ${DATABASE_USER:billing}
+    password: ${DATABASE_PASSWORD:billing}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+
+billing:
+  jwt:
+    secret: ${JWT_SECRET:change-me-this-is-only-a-development-secret-32b}
+    ttl-minutes: ${JWT_TTL_MINUTES:480}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+  jobs:
+    billing-cron: ${BILLING_CRON:0 */5 * * * *}
+    dunning-cron: ${DUNNING_CRON:0 */5 * * * *}
+    batch-size: 50
+  dunning:
+    retry-days: 1,3,5,7
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

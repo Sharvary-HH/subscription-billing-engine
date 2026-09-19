@@ -1,0 +1,12 @@
+billing:
+  jobs:
+    billing-cron: "-"
+    dunning-cron: "-"
+  jwt:
+    secret: test-secret-test-secret-test-secret-32
+  cors:
+    allowed-origins: http://localhost:4200
+logging:
+  level:
+    com.sharvary.billing: INFO
+    org.hibernate.SQL: WARN
