@@ -15,28 +15,32 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Token lifetime is measured on the wall clock, deliberately not the injected billing clock.
+ * A session is an infrastructure concern: advancing the demo clock by a month must not log the
+ * visitor out, and a test that steps time must not have its token expire under it.
+ */
 @Service
 public class JwtService {
 
     private final SecretKey key;
     private final Duration ttl;
-    private final Clock clock;
+    private final Clock wallClock = Clock.systemUTC();
 
     public JwtService(@Value("${billing.jwt.secret}") String secret,
-                      @Value("${billing.jwt.ttl-minutes:480}") long ttlMinutes, Clock clock) {
+                      @Value("${billing.jwt.ttl-minutes:480}") long ttlMinutes) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.ttl = Duration.ofMinutes(ttlMinutes);
-        this.clock = clock;
     }
 
     public String issue(AuthUser user) {
-        Date now = Date.from(clock.instant());
+        Date now = Date.from(wallClock.instant());
         var builder = Jwts.builder()
                 .subject(user.userId().toString())
                 .claim("email", user.email())
                 .claim("role", user.role().name())
                 .issuedAt(now)
-                .expiration(Date.from(clock.instant().plus(ttl)));
+                .expiration(Date.from(wallClock.instant().plus(ttl)));
         if (user.customerId() != null) {
             builder.claim("customerId", user.customerId().toString());
         }
@@ -45,7 +49,7 @@ public class JwtService {
 
     public Optional<AuthUser> parse(String token) {
         try {
-            Claims claims = Jwts.parser().verifyWith(key).clock(() -> Date.from(clock.instant())).build()
+            Claims claims = Jwts.parser().verifyWith(key).clock(() -> Date.from(wallClock.instant())).build()
                     .parseSignedClaims(token).getPayload();
             String customer = claims.get("customerId", String.class);
             return Optional.of(new AuthUser(UUID.fromString(claims.getSubject()), claims.get("email", String.class),
