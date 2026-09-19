@@ -21,6 +21,8 @@ open **Dunning queue**. That is three months of billing history, a proration eve
 dunning sequence in about ninety seconds. The demo dataset is rebuilt from scratch on every
 start and on **Reset demo**.
 
+![Time travel: advance the clock, force failures, watch the dunning queue fill](docs/demo.gif)
+
 ![Coverage](https://img.shields.io/badge/coverage-94.9%25%20line%20%2F%2086.2%25%20branch-141414?labelColor=E2E800)
 ![CI](https://github.com/Sharvary-HH/subscription-billing-engine/actions/workflows/ci.yml/badge.svg)
 
