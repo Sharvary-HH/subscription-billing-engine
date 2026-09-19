@@ -1,0 +1,4 @@
+billing:
+  demo:
+    enabled: true
+    seed-on-start: true
