@@ -33,6 +33,11 @@ import { DemoClockService } from '../core/demo-clock.service';
             <button type="button" class="acct" (click)="fill(d.customerEmail, d.password)"><b>Customer</b><span>{{ d.customerEmail }}</span></button>
             <div class="muted" style="font-size:12px">Password for both: <code>{{ d.password }}</code></div>
           </div>
+        } @else if (demo.waking()) {
+          <div class="demo">
+            <div class="lbl">Demo accounts</div>
+            <div class="muted" style="font-size:13px">Waking the API up. On the free hosting tier it sleeps after fifteen idle minutes, so the first request of the day takes about a minute. The one-click logins appear as soon as it answers.</div>
+          </div>
         }
       </div>
     </div>
